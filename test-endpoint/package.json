@@ -1,0 +1,16 @@
+{
+  "name": "test-endpoint",
+  "version": "1.0.0",
+  "description": "Test endpoint",
+  "main": "index.js",
+  "scripts": {
+    "app": "node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "connect-timeout": "^1.9.0",
+    "express": "^4.17.1",
+    "uuid": "^3.3.2"
+  }
+}
