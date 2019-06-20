@@ -1,7 +1,7 @@
 "use strict";
 
 const
-  uri = 'http://localhost/cycle/timeout/10/5',
+  uri = process.env.endpointUri || 'http://localhost/cycle/timeout/6/4',
   interval = 100,
   {getData} = require('./lib/GetData'),
   colors = {
