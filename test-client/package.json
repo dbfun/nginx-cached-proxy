@@ -1,0 +1,14 @@
+{
+  "name": "test-client",
+  "version": "1.0.0",
+  "description": "Test client",
+  "main": "index.js",
+  "scripts": {
+    "app": "node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "lodash": "^4.17.11"
+  }
+}
