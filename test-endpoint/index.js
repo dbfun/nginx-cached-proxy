@@ -2,7 +2,7 @@
 
 const
   port = 80,
-  timeout = 5000,
+  timeout = process.env.endpointTimeout || 5000,
   express = require('express'),
   app = express(),
   connectTimeout = require('connect-timeout'),
@@ -62,7 +62,7 @@ app.get(/^\/random\/([0-9]{1,2})$/, (req, res) => {
 `/cycle/error/10/5` - 10 секунд работает, 5 - не работает
 */
 
-app.get(/^\/cycle\/(timeout|error)\/([0-9]+)\/([0-9]+)$/, (req, res) => {
+app.get(/^\/cycle\/(timeout|error|blackhole)\/([0-9]+)\/([0-9]+)$/, (req, res) => {
   let failureCase = req.params[0];
   let expected200 = req.params[1] * 1000;
   let expected503 = req.params[2] * 1000;
@@ -81,10 +81,19 @@ app.get(/^\/cycle\/(timeout|error)\/([0-9]+)\/([0-9]+)$/, (req, res) => {
         res.status(500);
         respSomeDoc(res, "Something went wrong");
         break;
+      case "blackhole":
+        req.clearTimeout();
+        return;
       case "timeout":
         // отваливаемся по таймауту
+        break;
     }
   }
+});
+
+app.use((err, req, res, next) => {
+  res.status(500);
+  respSomeDoc(res, "Something went wrong");
 });
 
 app.listen(port);
