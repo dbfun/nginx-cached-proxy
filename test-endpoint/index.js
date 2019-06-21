@@ -42,6 +42,14 @@ app.get(/\/always\/([0-9]{3})/, (req, res) => {
 // Отказ по таймауту
 app.get('/timeout', (req, res) => {});
 
+// Медленное соединение
+app.get(/^\/slow\/([0-9]+)$/, (req, res) => {
+  let interval = req.params[0];
+  setTimeout(() => {
+    respSomeDoc(res, "ok");
+  }, interval * 1000);
+});
+
 // 200/404 с вероятностью выпадения "200 OK", %
 app.get(/^\/random\/([0-9]{1,2})$/, (req, res) => {
   let expected200 = req.params[0];
