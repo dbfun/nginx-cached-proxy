@@ -1,0 +1,27 @@
+version: '3'
+services:
+  client:
+    build: ./test-client
+    environment:
+      # - endpointUri=http://test-endpoint/healthcheck
+      - endpointUri=http://test-endpoint/cycle/error/5/5
+      # - endpointUri=http://test-endpoint/slow/3
+      # - endpointUri=http://test-endpoint/cycle/timeout/5/5
+      - clientReqInterval=1000
+      - http_proxy=http://proxy:80
+    depends_on:
+      - test-endpoint
+      - proxy
+    restart: always
+  proxy:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./proxy-conf:/etc/nginx/conf.d
+    restart: always
+  test-endpoint:
+    build: ./test-endpoint
+    environment:
+      - endpointTimeout=60000
+    restart: always
