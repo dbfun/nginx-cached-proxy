@@ -24,15 +24,28 @@ setInterval(() => {
   getData(uri).then(data => {
 
 
-    let is20x = data.info.http_code >= 200 && data.info.http_code < 300;
-    let is40x = data.info.http_code >= 400 && data.info.http_code < 500;
-    let is50x = data.info.http_code >= 500 && data.info.http_code < 600;
+    let proxyCodeColor;
 
-    // console.log(data);
+    switch(true) {
+      case data.info.http_code >= 200 && data.info.http_code < 300:
+        proxyCodeColor = `${colors.Bgreen}20x${colors.nc}`;
+        break;
+      case data.info.http_code >= 400 && data.info.http_code < 500:
+        proxyCodeColor = `${colors.Byellow}40x${colors.nc}`;
+        break;
+      case data.info.http_code >= 500 && data.info.http_code < 600:
+        proxyCodeColor = `${colors.Bred}50x${colors.nc}`;
+        break;
+      default:
+        proxyCodeColor = `${colors.Bblue}???${colors.nc}`;
+    }
+
+    let XCacheStatus = data.headers['X-Cache-Status'] || '-';
+    let XUpstreamStatus = data.headers['X-Upstream-Status'] || '-';
+    let XTime = data.headers['X-Time'] || '-';
 
     console.log(
-      `${colors.blue}${data.headers['X-Cache-Status']} ${data.headers['X-Upstream-Status']} ${data.headers['X-Time-Local']}${colors.nc} ${data.body}` +
-      (is20x ? `${colors.Bgreen}+${colors.nc}` : `${colors.Bred}-${colors.nc}`)
+      `Proxy: ${proxyCodeColor} Server: ${colors.yellow}${XCacheStatus} ${XUpstreamStatus} ${XTime}${colors.nc} ${data.body}`
     );
 
   }).catch(err => {

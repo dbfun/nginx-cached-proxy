@@ -4,9 +4,10 @@ services:
     build: ./test-client
     environment:
       # - endpointUri=http://test-endpoint/healthcheck
-      - endpointUri=http://test-endpoint/cycle/error/5/5
       # - endpointUri=http://test-endpoint/slow/3
-      # - endpointUri=http://test-endpoint/cycle/timeout/5/5
+      # - endpointUri=http://test-endpoint/cycle/error/10/10
+      # - endpointUri=http://test-endpoint/cycle/timeout/10/10
+      - endpointUri=http://test-endpoint/cycle/blackhole/5/100
       - clientReqInterval=1000
       - http_proxy=http://proxy:80
     depends_on:
