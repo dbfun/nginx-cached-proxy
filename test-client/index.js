@@ -2,7 +2,7 @@
 
 const
   uri = process.env.endpointUri || 'http://localhost/cycle/timeout/6/4',
-  interval = 100,
+  interval = process.env.clientReqInterval || 100,
   {getData} = require('./lib/GetData'),
   colors = {
     red: "\x1b[31m",
@@ -22,10 +22,19 @@ console.log(`URI: ${colors.Bblue}${uri}${colors.nc}`);
 setInterval(() => {
 
   getData(uri).then(data => {
+
+
     let is20x = data.info.http_code >= 200 && data.info.http_code < 300;
     let is40x = data.info.http_code >= 400 && data.info.http_code < 500;
     let is50x = data.info.http_code >= 500 && data.info.http_code < 600;
-    process.stdout.write(is20x ? `${colors.Bgreen}+${colors.nc}` : `${colors.Bred}-${colors.nc}`);
+
+    // console.log(data);
+
+    console.log(
+      `${colors.blue}${data.headers['X-Cache-Status']} ${data.headers['X-Upstream-Status']} ${data.headers['X-Time-Local']}${colors.nc} ${data.body}` +
+      (is20x ? `${colors.Bgreen}+${colors.nc}` : `${colors.Bred}-${colors.nc}`)
+    );
+
   }).catch(err => {
     console.log(err);
   });

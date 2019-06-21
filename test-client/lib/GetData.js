@@ -26,7 +26,7 @@ function getData(uri) {
   return new Promise((resolve, reject) => {
 
     let curlData = '';
-    const curl = spawn('curl', ['-skL', '-w', curlFormatStr,
+    const curl = spawn('curl', ['-skLi', '-w', curlFormatStr,
       '--connect-timeout', connectTimeout, '--max-time', maxTime, '--max-filesize', maxFilesize, uri]);
 
     curl.stdout.on('data', (data) => {
@@ -45,10 +45,31 @@ function getData(uri) {
 
       curlData = curlData.split('::curlResponseInfo::');
 
+      let headersAndData = curlData[0].split(/\r\n/);
+
       curlData = {
-        resp: curlData[0],
-        info: _.zipObject(curlFormat, curlData[1].replace(/,/g, '.').split('|||'))
+        info: _.zipObject(curlFormat, curlData[1].replace(/,/g, '.').split('|||')),
+        headers: {},
+        body: ""
       }
+
+      let isHeadSect = true;
+      let isFirstBody = true;
+      headersAndData.forEach(v => {
+        if(isHeadSect && v === "") {
+          isHeadSect = false;
+          return;
+        }
+        if(isHeadSect) {
+          let m = v.match(/^(.*?):\s*(.*?)$/)
+          if(m) {
+            curlData.headers[m[1]] = m[2];
+          }
+        } else {
+          curlData.body += isFirstBody ? v : "\r\n" + v;
+          isFirstBody = false;
+        }
+      });
 
       curlData.info = _.mapValues(curlData.info, (v, k) => {
         if(k == 'content_type') return v;
