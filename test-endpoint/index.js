@@ -22,7 +22,7 @@ const getSomeDoc = (msg) => {
 
 const respSomeDoc = (res, msg) => {
   let doc = getSomeDoc(msg);
-  console.log(`response code: ${res.statusCode} guid: ${doc.guid}`);
+  console.log(`Endpoint: ${res.statusCode} guid: ${doc.guid}`);
   res.setHeader('Content-Type', 'application/json');
   res.end(JSON.stringify(doc));
 }
