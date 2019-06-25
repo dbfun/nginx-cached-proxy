@@ -3,12 +3,21 @@ services:
   client:
     build: ./test-client
     environment:
+      # Точка для тестирования (backend)
+
       # - endpointUri=http://test-endpoint/healthcheck
       # - endpointUri=http://test-endpoint/slow/3
-      # - endpointUri=http://test-endpoint/cycle/error/10/10
-      # - endpointUri=http://test-endpoint/cycle/timeout/10/10
-      - endpointUri=http://test-endpoint/cycle/blackhole/5/100
+      # - endpointUri=http://test-endpoint/cycle/error/5/5
+      # - endpointUri=http://test-endpoint/cycle/timeout/5/5
+      - endpointUri=http://test-endpoint/cycle/blackhole/5/15
+
+      # Timeout клиента
+      - clientMaxTime=30
+      # Частота опроса сервера, мс
       - clientReqInterval=1000
+      # Выбор между параллельным и последовательным выполнением запросов
+      - respCheckType=serial
+      # Прокси, с помощью которого реализуется стратегия стабилизации работы; его можно отключить для сравнения
       - http_proxy=http://proxy:80
     depends_on:
       - test-endpoint
@@ -16,13 +25,12 @@ services:
     restart: always
   proxy:
     image: nginx:latest
-    ports:
-      - "80:80"
     volumes:
       - ./proxy-conf:/etc/nginx/conf.d
     restart: always
   test-endpoint:
     build: ./test-endpoint
     environment:
+      # Timeout endpoint сервера
       - endpointTimeout=60000
     restart: always
