@@ -3,6 +3,7 @@
 const
   uri = process.env.endpointUri || 'http://localhost/cycle/timeout/6/4',
   interval = process.env.clientReqInterval || 100,
+  respCheckType = process.env.respCheckType || 'parallel',
   {getData} = require('./lib/GetData'),
   colors = {
     red: "\x1b[31m",
@@ -19,10 +20,8 @@ const
 
 console.log(`URI: ${colors.Bblue}${uri}${colors.nc}`);
 
-setInterval(() => {
-
-  getData(uri).then(data => {
-
+function checkResp(uri) {
+  return getData(uri).then(data => {
 
     let proxyCodeColor;
 
@@ -51,5 +50,20 @@ setInterval(() => {
   }).catch(err => {
     console.log(err);
   });
+}
 
-}, interval);
+
+
+switch(respCheckType) {
+  case 'serial':
+    const serial = async () => {
+      await checkResp(uri);
+      setTimeout(serial, interval);
+    }
+
+    serial();
+    break;
+  default:
+  case 'parallel':
+    setInterval(() => { checkResp(uri); }, interval);
+}

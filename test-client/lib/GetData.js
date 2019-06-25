@@ -1,8 +1,8 @@
 "use strict";
 
 const
-  connectTimeout = 10,
-  maxTime = 30,
+  connectTimeout = process.env.clientConnectTimeout || 10,
+  maxTime = process.env.clientMaxTime || 30,
   maxFilesize = 3 * 1024 * 1024,
   { spawn } = require('child_process'),
   curlFormat = [
