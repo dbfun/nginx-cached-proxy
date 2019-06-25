@@ -42,9 +42,12 @@ function checkResp(uri) {
     let XCacheStatus = data.headers['X-Cache-Status'] || '-';
     let XUpstreamStatus = data.headers['X-Upstream-Status'] || '-';
     let XTime = data.headers['X-Time'] || '-';
+    let Time = parseFloat(data.info.time_total).toFixed(1);
 
     console.log(
-      `Proxy: ${proxyCodeColor} Server: ${colors.yellow}${XCacheStatus} ${XUpstreamStatus} ${XTime}${colors.nc} ${data.body}`
+      XCacheStatus === '-' ?
+      `Server: ${proxyCodeColor} ${Time}s\t${data.body}` :
+      `Proxy: ${proxyCodeColor} ${Time}s Server: ${colors.yellow}${XCacheStatus} ${XUpstreamStatus} ${XTime}${colors.nc}\t${data.body}`
     );
 
   }).catch(err => {
