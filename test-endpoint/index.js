@@ -22,8 +22,20 @@ const getSomeDoc = (msg) => {
 
 const respSomeDoc = (res, msg) => {
   let doc = getSomeDoc(msg);
+  let now = new Date();
   console.log(`Endpoint: ${res.statusCode} guid: ${doc.guid}`);
   res.setHeader('Content-Type', 'application/json');
+  // Этот заголовок рекомендуется отдавать всем бекендам, чтобы выводить сообщение "данные просрочены на ..."
+  res.setHeader('Last-Modified', now.toGMTString());
+
+  // Куки
+  res.cookie('test', Math.random().toString(), { maxAge: 900000, httpOnly: true });
+
+  // Заголовки кеширования
+  res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', 'Fri, 30 Oct 1998 14:19:41 GMT');
+
   res.end(JSON.stringify(doc));
 }
 
@@ -92,9 +104,11 @@ app.get(/^\/cycle\/(timeout|error|blackhole)\/([0-9]+)\/([0-9]+)$/, (req, res) =
         respSomeDoc(res, "Something went wrong");
         break;
       case "blackhole":
+        console.log(`Endpoint: blackhole`);
         req.clearTimeout();
         return;
       case "timeout":
+        console.log(`Endpoint: timeout`);
         // отваливаемся по таймауту
         break;
     }
