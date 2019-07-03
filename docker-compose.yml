@@ -18,15 +18,15 @@ services:
       # Выбор между параллельным и последовательным выполнением запросов
       - respCheckType=serial
       # Прокси, с помощью которого реализуется стратегия стабилизации работы; его можно отключить для сравнения
-      - http_proxy=http://proxy:80
+      - http_proxy=http://proxy-nginx:80
     depends_on:
       - test-endpoint
-      - proxy
+      - proxy-nginx
     restart: always
-  proxy:
+  proxy-nginx:
     image: nginx:latest
     volumes:
-      - ./proxy-conf:/etc/nginx/conf.d
+      - ./nginx:/etc/nginx/conf.d
     restart: always
   test-endpoint:
     build: ./test-endpoint
