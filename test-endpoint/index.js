@@ -3,12 +3,17 @@
 const
   port = 80,
   timeout = process.env.endpointTimeout || 5000,
+  set_cookie = process.env.set_cookie || "on",
+  set_no_cache_and_expired = process.env.set_no_cache_and_expired || "on",
   express = require('express'),
   app = express(),
   connectTimeout = require('connect-timeout'),
   uuidv4 = require('uuid/v4'),
   startDate = new Date().getTime()
   ;
+
+console.log(`set_cookie: ${set_cookie}`);
+console.log(`set_no_cache_and_expired: ${set_no_cache_and_expired}`);
 
 const getSomeDoc = (msg) => {
   let now = new Date();
@@ -29,12 +34,16 @@ const respSomeDoc = (res, msg) => {
   res.setHeader('Last-Modified', now.toGMTString());
 
   // Куки
-  res.cookie('test', Math.random().toString(), { maxAge: 900000, httpOnly: true });
+  if(set_cookie === "on") {
+    res.cookie('test', Math.random().toString(), { maxAge: 900000, httpOnly: true });
+  }
 
   // Заголовки кеширования
-  res.setHeader('Cache-Control', 'no-cache, must-revalidate');
-  res.setHeader('Pragma', 'no-cache');
-  res.setHeader('Expires', 'Fri, 30 Oct 1998 14:19:41 GMT');
+  if(set_no_cache_and_expired === "on") {
+    res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', 'Fri, 30 Oct 1998 14:19:41 GMT');
+  }
 
   res.end(JSON.stringify(doc));
 }
