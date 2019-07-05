@@ -1,14 +1,9 @@
 FROM node:current-alpine
 
-RUN apk add curl
-
-RUN mkdir /app
-ADD ./package.json /app
-
-RUN cd /app && npm install
-
-ADD ./index.js /app
-ADD ./lib /app/lib
-
+ADD . /app
 WORKDIR /app
+
+RUN apk add curl && \
+    npm install
+
 CMD [ "npm", "run", "app" ]

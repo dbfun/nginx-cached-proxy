@@ -1,9 +1,12 @@
 "use strict";
 
 const
-  uri = process.env.endpointUri || 'http://localhost/cycle/timeout/6/4',
-  interval = process.env.clientReqInterval || 100,
+  endpointUri = process.env.endpointUri || 'http://localhost/cycle/timeout/6/4',
+  clientMaxTime = process.env.clientMaxTime || 30,
+  clientReqInterval = process.env.clientReqInterval || 100,
   respCheckType = process.env.respCheckType || 'parallel',
+  http_proxy = process.env.http_proxy || "-",
+  showHeaders = process.env.showHeaders || "off",
   {getData} = require('./lib/GetData'),
   colors = {
     red: "\x1b[31m",
@@ -18,37 +21,70 @@ const
   }
   ;
 
-console.log(`URI: ${colors.Bblue}${uri}${colors.nc}`);
+console.log(`Config:
+    endpointUri: ${colors.Bblue}${endpointUri}${colors.nc}
+    clientMaxTime: ${clientMaxTime}
+    clientReqInterval: ${clientReqInterval}
+    respCheckType: ${respCheckType}
+    http_proxy: ${http_proxy}
+`);
 
 function checkResp(uri) {
-  return getData(uri).then(data => {
+  return getData(uri, clientMaxTime).then(data => {
 
-    let proxyCodeColor;
+    let httpCodeColor;
 
     switch(true) {
       case data.info.http_code >= 200 && data.info.http_code < 300:
-        proxyCodeColor = `${colors.Bgreen}20x${colors.nc}`;
+        httpCodeColor = `${colors.Bgreen}20x${colors.nc}`;
         break;
       case data.info.http_code >= 400 && data.info.http_code < 500:
-        proxyCodeColor = `${colors.Byellow}40x${colors.nc}`;
+        httpCodeColor = `${colors.Byellow}40x${colors.nc}`;
         break;
       case data.info.http_code >= 500 && data.info.http_code < 600:
-        proxyCodeColor = `${colors.Bred}50x${colors.nc}`;
+        httpCodeColor = `${colors.Bred}50x${colors.nc}`;
         break;
       default:
-        proxyCodeColor = `${colors.Bblue}???${colors.nc}`;
+        httpCodeColor = `${colors.Bblue}???${colors.nc}`;
     }
 
+    // заголовки: последняя модификация
     let LastModified = data.headers['Last-Modified'] || '-';
-    let XCacheStatus = data.headers['X-Cache-Status'] || '-';
-    let XUpstreamStatus = data.headers['X-Upstream-Status'] || '-';
+    // возраст (у Nginx нет)
+    let Age = data.headers['Age'] || '-';
+
+    // время из тела запроса
     let Time = parseFloat(data.info.time_total).toFixed(1);
 
-    console.log(
-      XCacheStatus === '-' ?
-      `Server: ${proxyCodeColor} ${Time}s\t${data.body}` :
-      `Proxy: ${proxyCodeColor} ${Time}s Server: ${colors.yellow}${XCacheStatus} ${XUpstreamStatus} ${LastModified}${colors.nc}\t${data.body}`
-    );
+    // прокси?
+    let isLikeNginx = typeof data.headers['X-Cache-Status'] !== "undefined";
+    let isLikeVarnish = typeof data.headers['X-Varnish'] !== "undefined";
+    let unknownProxy = http_proxy !== "-";
+
+    if(showHeaders === "on") {
+      console.log(data.headers);
+    }
+
+    let report;
+    switch(true) {
+      case isLikeNginx:
+        let XCacheStatus = data.headers['X-Cache-Status'] || '-';
+        let XUpstreamStatus = data.headers['X-Upstream-Status'] || '-';
+        report = `Proxy: ${httpCodeColor} ${Time}s Server: ${LastModified} ${colors.yellow}${XCacheStatus} ${XUpstreamStatus}${colors.nc}\t${data.body}`
+        break;
+      case isLikeVarnish:
+        let XVarnish = data.headers['XVarnish'] || '-';
+        report = `Proxy: ${httpCodeColor} ${Time}s Server: ${LastModified} ${colors.yellow}${Age}${colors.nc}\t${data.body}`
+        break;
+      case unknownProxy:
+        report = `Unknown proxy Server: ${httpCodeColor} ${Time}s\t${data.body}`;
+        break;
+      // no proxy
+      default:
+        report = `No proxy Server: ${httpCodeColor} ${Time}s\t${data.body}`;
+    }
+
+    console.log(report);
 
   }).catch(err => {
     console.log(err);
@@ -60,13 +96,13 @@ function checkResp(uri) {
 switch(respCheckType) {
   case 'serial':
     const serial = async () => {
-      await checkResp(uri);
-      setTimeout(serial, interval);
+      await checkResp(endpointUri);
+      setTimeout(serial, clientReqInterval);
     }
 
     serial();
     break;
   default:
   case 'parallel':
-    setInterval(() => { checkResp(uri); }, interval);
+    setInterval(() => { checkResp(endpointUri); }, clientReqInterval);
 }

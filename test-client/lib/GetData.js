@@ -1,8 +1,6 @@
 "use strict";
 
 const
-  connectTimeout = process.env.clientConnectTimeout || 10,
-  maxTime = process.env.clientMaxTime || 30,
   maxFilesize = 3 * 1024 * 1024,
   { spawn } = require('child_process'),
   curlFormat = [
@@ -22,12 +20,11 @@ const
   _ = require('lodash')
   ;
 
-function getData(uri) {
+function getData(uri, clientMaxTime) {
   return new Promise((resolve, reject) => {
 
     let curlData = '';
-    const curl = spawn('curl', ['-skLi', '-w', curlFormatStr,
-      '--connect-timeout', connectTimeout, '--max-time', maxTime, '--max-filesize', maxFilesize, uri]);
+    const curl = spawn('curl', ['-skLi', '-w', curlFormatStr, '--max-time', clientMaxTime, uri]);
 
     curl.stdout.on('data', (data) => {
       curlData += data;
