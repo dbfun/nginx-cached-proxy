@@ -1,13 +1,8 @@
 FROM node:current-alpine
 
-RUN mkdir /app
-ADD ./package.json /app
-
-RUN cd /app && npm install
-
-ADD ./index.js /app
-
-ENV port=80
-
+ADD . /app
 WORKDIR /app
+
+RUN npm install
+
 CMD [ "npm", "run", "app" ]
