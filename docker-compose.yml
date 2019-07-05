@@ -1,5 +1,6 @@
 version: '3'
 services:
+
   client:
     build: ./test-client
     environment:
@@ -7,9 +8,10 @@ services:
 
       # - endpointUri=http://test-endpoint/healthcheck
       # - endpointUri=http://test-endpoint/slow/3
-      # - endpointUri=http://test-endpoint/cycle/error/5/5
+      - endpointUri=http://test-endpoint/cycle/error/5/5
       # - endpointUri=http://test-endpoint/cycle/timeout/5/5
-      - endpointUri=http://test-endpoint/cycle/blackhole/5/15
+      # - endpointUri=http://test-endpoint/cycle/blackhole/5/15
+      # - endpointUri=http://test-endpoint/healthcheck
 
       # Timeout клиента
       - clientMaxTime=30
@@ -18,19 +20,44 @@ services:
       # Выбор между параллельным и последовательным выполнением запросов
       - respCheckType=serial
       # Прокси, с помощью которого реализуется стратегия стабилизации работы; его можно отключить для сравнения
-      - http_proxy=http://proxy-nginx:80
+      # - http_proxy=http://proxy-nginx:80
+      - http_proxy=http://proxy-varnish:80
+      # показывать заголовки ответа?
+      - showHeaders=off
     depends_on:
       - test-endpoint
+      - proxy-varnish
       - proxy-nginx
     restart: always
+
+
   proxy-nginx:
     image: nginx:latest
     volumes:
       - ./nginx:/etc/nginx/conf.d
     restart: always
+
+
+  proxy-varnish:
+    # TODO выбор хранилища: https://varnish-cache.org/docs/6.2/users-guide/storage-backends.html
+    build: ./varnish/
+    stop_signal: SIGINT
+    environment:
+      - logs=off
+    volumes:
+      - ./varnish/default.vcl:/etc/varnish/default.vcl
+    restart: always
+
+
   test-endpoint:
     build: ./test-endpoint
     environment:
+      # Включить установку кукисов
+      - set_cookie=on
+      # Включить установку заголовков против кеширования
+      - set_no_cache_and_expired=on
       # Timeout endpoint сервера
       - endpointTimeout=60000
+      # Порт
+      - port=80
     restart: always
