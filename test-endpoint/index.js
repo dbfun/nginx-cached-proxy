@@ -1,7 +1,7 @@
 "use strict";
 
 const
-  port = 80,
+  port = process.env.port || 80,
   timeout = process.env.endpointTimeout || 5000,
   set_cookie = process.env.set_cookie || "on",
   set_no_cache_and_expired = process.env.set_no_cache_and_expired || "on",
@@ -12,8 +12,12 @@ const
   startDate = new Date().getTime()
   ;
 
-console.log(`set_cookie: ${set_cookie}`);
-console.log(`set_no_cache_and_expired: ${set_no_cache_and_expired}`);
+console.log(`Config:
+    port: ${port}
+    timeout: ${timeout}
+    set_cookie: ${set_cookie}
+    set_no_cache_and_expired: ${set_no_cache_and_expired}
+`);
 
 const getSomeDoc = (msg) => {
   let now = new Date();
@@ -28,7 +32,7 @@ const getSomeDoc = (msg) => {
 const respSomeDoc = (res, msg) => {
   let doc = getSomeDoc(msg);
   let now = new Date();
-  console.log(`Endpoint: ${res.statusCode} guid: ${doc.guid}`);
+  console.log(`HTTP: ${res.statusCode} guid: ${doc.guid}`);
   res.setHeader('Content-Type', 'application/json');
   // Этот заголовок рекомендуется отдавать всем бекендам, чтобы выводить сообщение "данные просрочены на ..."
   res.setHeader('Last-Modified', now.toGMTString());
