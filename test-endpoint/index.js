@@ -12,6 +12,8 @@ const
   startDate = new Date().getTime()
   ;
 
+let cnt = 0;
+
 console.log(`Config:
     port: ${port}
     timeout: ${timeout}
@@ -21,7 +23,9 @@ console.log(`Config:
 
 const getSomeDoc = (msg) => {
   let now = new Date();
+  cnt++;
   return {
+    n: cnt,
     msg: msg,
     guid: uuidv4(),
     now: now.toISOString(),
@@ -93,15 +97,15 @@ app.get(/^\/random\/([0-9]{1,2})$/, (req, res) => {
 "циклический отказ" - наиболее вероятный вариант работы неустойчивых сервисов
 промежуток "работает" сменяется промежутком "не работает"
 1-ый параметр - продолжительность работы в секундах, 200 OK
-2-ой параметр - продолжительность "отказа" в секундах, 503 Service Unavailable
+2-ой параметр - продолжительность "отказа" в секундах, 500 Internal Server Error
 `/cycle/error/10/5` - 10 секунд работает, 5 - не работает
 */
 
 app.get(/^\/cycle\/(timeout|error|blackhole)\/([0-9]+)\/([0-9]+)$/, (req, res) => {
   let failureCase = req.params[0];
   let expected200 = req.params[1] * 1000;
-  let expected503 = req.params[2] * 1000;
-  let cycleDuration = expected200 + expected503;
+  let expected500 = req.params[2] * 1000;
+  let cycleDuration = expected200 + expected500;
 
   // смещение, в мс, от момента старта
   let offset = new Date().getTime() - startDate;

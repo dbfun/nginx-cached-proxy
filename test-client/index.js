@@ -21,6 +21,8 @@ const
   }
   ;
 
+let cnt = 0;
+
 console.log(`Config:
     endpointUri: ${colors.Bblue}${endpointUri}${colors.nc}
     clientMaxTime: ${clientMaxTime}
@@ -31,6 +33,7 @@ console.log(`Config:
 
 function checkResp(uri) {
   return getData(uri, clientMaxTime).then(data => {
+    cnt++;
 
     let httpCodeColor;
 
@@ -70,18 +73,18 @@ function checkResp(uri) {
       case isLikeNginx:
         let XCacheStatus = data.headers['X-Cache-Status'] || '-';
         let XUpstreamStatus = data.headers['X-Upstream-Status'] || '-';
-        report = `Proxy: ${httpCodeColor} ${Time}s Server: ${LastModified} ${colors.yellow}${XCacheStatus} ${XUpstreamStatus}${colors.nc}\t${data.body}`
+        report = `Proxy: ${httpCodeColor} ${Time}s n:${cnt} Server: ${LastModified} ${colors.yellow}${XCacheStatus} ${XUpstreamStatus}${colors.nc}\t${data.body}`
         break;
       case isLikeVarnish:
         let XVarnish = data.headers['XVarnish'] || '-';
-        report = `Proxy: ${httpCodeColor} ${Time}s Server: ${LastModified} ${colors.yellow}${Age}${colors.nc}\t${data.body}`
+        report = `Proxy: ${httpCodeColor} ${Time}s n:${cnt} Server: ${LastModified} ${colors.yellow}${Age}${colors.nc}\t${data.body}`
         break;
       case unknownProxy:
-        report = `Unknown proxy Server: ${httpCodeColor} ${Time}s\t${data.body}`;
+        report = `Unknown proxy Server: ${httpCodeColor} ${Time}s n:${cnt}\t${data.body}`;
         break;
       // no proxy
       default:
-        report = `No proxy Server: ${httpCodeColor} ${Time}s\t${data.body}`;
+        report = `No proxy Server: ${httpCodeColor} ${Time}s n:${cnt}\t${data.body}`;
     }
 
     console.log(report);
