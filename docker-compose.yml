@@ -8,7 +8,7 @@ services:
 
       # - endpointUri=http://test-endpoint/healthcheck
       # - endpointUri=http://test-endpoint/slow/3
-      - endpointUri=http://test-endpoint/cycle/error/5/5
+      - endpointUri=http://test-endpoint/cycle/error/4/4
       # - endpointUri=http://test-endpoint/cycle/timeout/5/5
       # - endpointUri=http://test-endpoint/cycle/blackhole/5/15
       # - endpointUri=http://test-endpoint/healthcheck
@@ -17,11 +17,11 @@ services:
       - clientMaxTime=30
       # Частота опроса сервера, мс
       - clientReqInterval=1000
-      # Выбор между параллельным и последовательным выполнением запросов
+      # Выбор между параллельным (parallel) и последовательным (serial) выполнением запросов
       - respCheckType=serial
       # Прокси, с помощью которого реализуется стратегия стабилизации работы; его можно отключить для сравнения
-      # - http_proxy=http://proxy-nginx:80
-      - http_proxy=http://proxy-varnish:80
+      - http_proxy=http://proxy-nginx:80
+      # - http_proxy=http://proxy-varnish:80
       # показывать заголовки ответа?
       - showHeaders=off
     depends_on:
@@ -39,7 +39,6 @@ services:
 
 
   proxy-varnish:
-    # TODO выбор хранилища: https://varnish-cache.org/docs/6.2/users-guide/storage-backends.html
     build: ./varnish/
     stop_signal: SIGINT
     environment:
