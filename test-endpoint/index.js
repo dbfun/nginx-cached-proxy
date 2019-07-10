@@ -2,9 +2,11 @@
 
 const
   port = process.env.port || 80,
-  timeout = process.env.endpointTimeout || 5000,
+  endpoint_timeout = process.env.endpoint_timeout || 5000,
   set_cookie = process.env.set_cookie || "on",
   set_no_cache_and_expired = process.env.set_no_cache_and_expired || "on",
+  set_header_cache_control = process.env.set_header_cache_control || "-",
+  document = process.env.document ? process.env.document.split(",") : ["n", "msg", "guid", "now", "uptime"],
   express = require('express'),
   app = express(),
   connectTimeout = require('connect-timeout'),
@@ -16,21 +18,23 @@ let cnt = 0;
 
 console.log(`Config:
     port: ${port}
-    timeout: ${timeout}
+    endpoint_timeout: ${endpoint_timeout}
     set_cookie: ${set_cookie}
     set_no_cache_and_expired: ${set_no_cache_and_expired}
+    set_header_cache_control: ${set_header_cache_control}
+    document: ${document}
 `);
 
 const getSomeDoc = (msg) => {
   let now = new Date();
   cnt++;
-  return {
-    n: cnt,
-    msg: msg,
-    guid: uuidv4(),
-    now: now.toISOString(),
-    uptime: `${Math.floor((now.getTime() - startDate) / 1000)} seconds`
-  }
+  let doc = {};
+  if(document.indexOf("n") !== -1) doc.n = cnt;
+  if(document.indexOf("msg") !== -1) doc.msg = msg;
+  if(document.indexOf("guid") !== -1) doc.guid = uuidv4();
+  if(document.indexOf("now") !== -1) doc.now = now.toISOString();
+  if(document.indexOf("uptime") !== -1) doc.uptime = `${Math.floor((now.getTime() - startDate) / 1000)} seconds`;
+  return doc;
 }
 
 const respSomeDoc = (res, msg) => {
@@ -51,12 +55,18 @@ const respSomeDoc = (res, msg) => {
     res.setHeader('Cache-Control', 'no-cache, must-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', 'Fri, 30 Oct 1998 14:19:41 GMT');
+    res.setHeader('Vary', 'User-Agent');
+  }
+
+  // Указать заголовок для кеширования
+  if(set_header_cache_control !== '-') {
+    res.setHeader('Cache-Control', set_header_cache_control);
   }
 
   res.end(JSON.stringify(doc));
 }
 
-app.use(connectTimeout(timeout));
+app.use(connectTimeout(endpoint_timeout));
 
 // Общая проверка работоспособности, всегда 200 ОК
 app.get('/healthcheck', (req, res) => {
