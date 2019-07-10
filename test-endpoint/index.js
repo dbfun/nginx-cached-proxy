@@ -8,6 +8,7 @@ const
   set_header_cache_control = process.env.set_header_cache_control || "-",
   document = process.env.document ? process.env.document.split(",") : ["n", "msg", "guid", "now", "uptime"],
   express = require('express'),
+  cookieParser = require('cookie-parser'),
   app = express(),
   connectTimeout = require('connect-timeout'),
   uuidv4 = require('uuid/v4'),
@@ -67,6 +68,8 @@ const respSomeDoc = (res, msg) => {
 }
 
 app.use(connectTimeout(endpoint_timeout));
+app.use(cookieParser());
+// теперь куки доступны через req.cookies
 
 // Общая проверка работоспособности, всегда 200 ОК
 app.get('/healthcheck', (req, res) => {
