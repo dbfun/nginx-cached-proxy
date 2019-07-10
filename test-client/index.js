@@ -6,6 +6,7 @@ const
   client_req_interval = process.env.client_req_interval || 100,
   resp_check_type = process.env.resp_check_type || 'parallel',
   http_proxy = process.env.http_proxy || "-",
+  send_cookie = process.env.send_cookie || "off",
   show_headers = process.env.show_headers || "off",
   {getData} = require('./lib/GetData'),
   colors = {
@@ -32,7 +33,7 @@ console.log(`Config:
 `);
 
 function checkResp(uri) {
-  return getData(uri, client_max_time).then(data => {
+  return getData(uri, send_cookie, client_max_time).then(data => {
     cnt++;
 
     let httpCodeColor;

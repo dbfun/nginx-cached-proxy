@@ -20,11 +20,16 @@ const
   _ = require('lodash')
   ;
 
-function getData(uri, clientMaxTime) {
+function getData(uri, send_cookie, clientMaxTime) {
   return new Promise((resolve, reject) => {
 
     let curlData = '';
-    const curl = spawn('curl', ['-skLi', '-w', curlFormatStr, '--max-time', clientMaxTime, uri]);
+    let curlParams = ['-skLi', '-w', curlFormatStr, '--max-time', clientMaxTime, uri];
+    if(send_cookie === "on") {
+      curlParams.push("--cookie");
+      curlParams.push(`client_cookie=${Math.random().toString()}`);
+    }
+    const curl = spawn('curl', curlParams);
 
     curl.stdout.on('data', (data) => {
       curlData += data;
