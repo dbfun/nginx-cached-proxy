@@ -41,7 +41,7 @@ const getSomeDoc = (msg) => {
 const respSomeDoc = (res, msg) => {
   let doc = getSomeDoc(msg);
   let now = new Date();
-  console.log(`HTTP: ${res.statusCode} guid: ${doc.guid}`);
+  console.log(`HTTP: ${res.statusCode}` + (typeof doc.guid !== "undefined" ? `guid: ${doc.guid}` : ""));
   res.setHeader('Content-Type', 'application/json');
   // Этот заголовок рекомендуется отдавать всем бекендам, чтобы выводить сообщение "данные просрочены на ..."
   res.setHeader('Last-Modified', now.toGMTString());

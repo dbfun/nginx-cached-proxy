@@ -6,28 +6,31 @@ services:
     environment:
       # Точка для тестирования (backend)
 
-      # - endpointUri=http://test-endpoint/healthcheck
-      # - endpointUri=http://test-endpoint/slow/3
-      - endpointUri=http://test-endpoint/cycle/error/4/4
-      # - endpointUri=http://test-endpoint/cycle/timeout/5/5
-      # - endpointUri=http://test-endpoint/cycle/blackhole/5/15
-      # - endpointUri=http://test-endpoint/healthcheck
+      # - endpoint_uri=http://test-endpoint/healthcheck
+      # - endpoint_uri=http://test-endpoint/slow/3
+      - endpoint_uri=http://test-endpoint/cycle/error/4/4
+      # - endpoint_uri=http://test-endpoint/cycle/timeout/5/5
+      # - endpoint_uri=http://test-endpoint/cycle/blackhole/5/15
 
-      # Timeout клиента
-      - clientMaxTime=30
+      # Timeout клиента, сек
+      - client_max_time=30
       # Частота опроса сервера, мс
-      - clientReqInterval=1000
+      - client_req_interval=1000
       # Выбор между параллельным (parallel) и последовательным (serial) выполнением запросов
-      - respCheckType=serial
+      - resp_check_type=serial
       # Прокси, с помощью которого реализуется стратегия стабилизации работы; его можно отключить для сравнения
-      - http_proxy=http://proxy-nginx:80
+      # - http_proxy=http://proxy-nginx:80
       # - http_proxy=http://proxy-varnish:80
-      # показывать заголовки ответа?
-      - showHeaders=off
+      # - http_proxy=http://proxy-squid:3128
+      # Включить передачу кукисов (on, off)
+      - send_cookie=off
+      # Показывать заголовки ответа (on, off)
+      - show_headers=off
     depends_on:
       - test-endpoint
-      - proxy-varnish
-      - proxy-nginx
+      # - proxy-varnish
+      # - proxy-nginx
+      # - proxy-squid
     restart: always
 
 
@@ -48,15 +51,27 @@ services:
     restart: always
 
 
+
+  proxy-squid:
+    build: ./squid/
+    restart: always
+    volumes:
+      - ./squid/squid.conf:/etc/squid/squid.conf
+
+
   test-endpoint:
     build: ./test-endpoint
     environment:
+      # Порт
+      - port=80
+      # Timeout endpoint сервера в мс
+      - endpoint_timeout=5000
       # Включить установку кукисов
       - set_cookie=on
       # Включить установку заголовков против кеширования
       - set_no_cache_and_expired=on
-      # Timeout endpoint сервера
-      - endpointTimeout=60000
-      # Порт
-      - port=80
+      # Указать заголовок для кеширования
+      - set_header_cache_control=max-age=0, stale-if-error=3600
+      # Содержимое документа
+      - document=n,msg,guid,now,uptime
     restart: always

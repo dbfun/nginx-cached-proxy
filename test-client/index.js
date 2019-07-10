@@ -84,7 +84,7 @@ function checkResp(uri) {
       case isLikeSquid:
         let XCache = data.headers['X-Cache'] || '-';
         let XCacheLookup = data.headers['X-Cache-Lookup'] || '-';
-        report = `Proxy: ${httpCodeColor} ${Time}s n:${cnt} Server: ${LastModified} ${colors.yellow}${XCache} ${XCacheLookup}${colors.nc}\t${data.body}`
+        report = `Proxy: ${httpCodeColor} ${Time}s n:${cnt} Server: ${LastModified} ${colors.yellow}${XCache} ${colors.nc}\t${data.body}`
         break;
       case unknownProxy:
         report = `Unknown proxy Server: ${httpCodeColor} ${Time}s n:${cnt}\t${data.body}`;
